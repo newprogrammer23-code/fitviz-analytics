@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/context/UserContext";
 import { useToast } from "@/components/ui/use-toast";
+import { useNotifications } from "@/context/NotificationContext";
+import NotificationPanel from "@/components/notifications/NotificationPanel";
 
 const TopBar = () => {
   const { profile, updateProfile } = useUser();
   const { toast } = useToast();
+  const { unreadCount, markAllAsRead } = useNotifications();
   const [isEditing, setIsEditing] = useState(false);
   const [nameInput, setNameInput] = useState(profile.name);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleSaveName = () => {
     if (nameInput.trim() !== '') {
@@ -21,6 +25,13 @@ const TopBar = () => {
         title: "Profile updated",
         description: "Your name has been updated successfully.",
       });
+    }
+  };
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications && unreadCount > 0) {
+      markAllAsRead();
     }
   };
 
@@ -63,9 +74,24 @@ const TopBar = () => {
       </div>
       
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
-          <Bell size={20} />
-        </Button>
+        <div className="relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full hover:bg-white/10"
+            onClick={toggleNotifications}
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-fitviz-pink text-[10px] flex items-center justify-center text-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Button>
+          {showNotifications && (
+            <NotificationPanel onClose={() => setShowNotifications(false)} />
+          )}
+        </div>
         <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
           <Settings size={20} />
         </Button>

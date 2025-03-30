@@ -10,15 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useUser } from "@/context/UserContext";
 import { useToast } from "@/components/ui/use-toast";
+import { useNotifications } from "@/context/NotificationContext";
 
 const Sleep = () => {
   const { sleepData, addSleepEntry } = useUser();
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
   const [formData, setFormData] = useState({
     hoursSlept: 7.5,
     restTime: "23:00",
     wakeUpTime: "06:30"
   });
+  const [reminderSet, setReminderSet] = useState(false);
+  const [bedtimeReminder, setBedtimeReminder] = useState("22:30");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,6 +71,57 @@ const Sleep = () => {
     } else {
       return "You're sleeping more than average. While extra sleep can be beneficial, too much might indicate other issues.";
     }
+  };
+
+  // Function to set sleep reminder
+  const setSleepReminder = () => {
+    // Calculate when to show the reminder
+    const [hours, minutes] = bedtimeReminder.split(':').map(Number);
+    
+    // Create a date object for today at the reminder time
+    const now = new Date();
+    const reminderTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes
+    );
+    
+    // If the time has already passed today, set it for tomorrow
+    if (reminderTime < now) {
+      reminderTime.setDate(reminderTime.getDate() + 1);
+    }
+    
+    // Calculate milliseconds until reminder time
+    const timeUntilReminder = reminderTime.getTime() - now.getTime();
+    
+    // Set the reminder
+    setTimeout(() => {
+      addNotification(
+        "Sleep Reminder", 
+        `Time to prepare for bed! A good night's sleep is essential for recovery and health.`, 
+        "sleep"
+      );
+      
+      // Schedule the next day's reminder after this one triggers
+      setTimeout(setSleepReminder, 1000);
+    }, timeUntilReminder);
+    
+    setReminderSet(true);
+    
+    // Show confirmation toast and notification
+    toast({
+      title: "Sleep reminder set",
+      description: `You'll be reminded to go to bed at ${bedtimeReminder} every day.`
+    });
+    
+    // Add initial notification to confirm reminder is set
+    addNotification(
+      "Sleep Reminder Set", 
+      `You'll be reminded to go to bed at ${bedtimeReminder} every day.`, 
+      "sleep"
+    );
   };
 
   return (
@@ -147,6 +202,11 @@ const Sleep = () => {
             <div className="space-y-4">
               <p className="text-sm text-gray-300">
                 Set a consistent sleep schedule to improve your sleep quality.
+                {reminderSet && (
+                  <span className="block mt-1 text-fitviz-pink">
+                    Bedtime reminder set for: {bedtimeReminder}
+                  </span>
+                )}
               </p>
               
               <div className="space-y-2">
@@ -154,14 +214,33 @@ const Sleep = () => {
                 <Input
                   id="bedtimeReminder"
                   type="time"
-                  defaultValue="22:30"
+                  value={bedtimeReminder}
+                  onChange={(e) => setBedtimeReminder(e.target.value)}
                   className="bg-fitviz-dark-light border-gray-700"
                 />
               </div>
               
-              <Button className="w-full bg-fitviz-pink hover:bg-fitviz-pink/80">
-                Set Reminder
+              <Button 
+                className="w-full bg-fitviz-pink hover:bg-fitviz-pink/80"
+                onClick={setSleepReminder}
+              >
+                {reminderSet ? "Update Reminder" : "Set Reminder"}
               </Button>
+              
+              {reminderSet && (
+                <Button 
+                  className="w-full bg-fitviz-dark border-gray-700 hover:bg-fitviz-dark/80"
+                  onClick={() => {
+                    setReminderSet(false);
+                    toast({
+                      title: "Reminder canceled",
+                      description: "Sleep reminder has been canceled."
+                    });
+                  }}
+                >
+                  Cancel Reminder
+                </Button>
+              )}
             </div>
           </DashboardCard>
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Droplet, Plus, BarChart2, Bell } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -10,11 +11,15 @@ import { Card } from "@/components/ui/card";
 import { useUser } from "@/context/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { useNotifications } from "@/context/NotificationContext";
 
 const Water = () => {
   const { profile, waterIntake, addWaterIntake } = useUser();
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
   const [amount, setAmount] = useState(0.25);
+  const [reminderInterval, setReminderInterval] = useState<string>("");
+  const [reminderIntervalId, setReminderIntervalId] = useState<number | null>(null);
 
   // Calculate recommended water intake based on weight
   const weight = Number(profile.weight);
@@ -56,6 +61,54 @@ const Water = () => {
   // Adjust based on today's intake vs recommended
   const intakeAdjustment = (todayIntake / Number(recommendedWaterIntake)) * 10;
   const bodyWaterIndex = Math.min(100, Math.max(0, baseHydrationPercentage + intakeAdjustment));
+
+  // Function to set water reminders
+  const setWaterReminder = (hours: number) => {
+    // Clear any existing interval
+    if (reminderIntervalId !== null) {
+      clearInterval(reminderIntervalId);
+      setReminderIntervalId(null);
+    }
+
+    // Convert hours to milliseconds
+    const interval = hours * 60 * 60 * 1000;
+    
+    // Set new interval
+    const id = window.setInterval(() => {
+      // Add notification
+      addNotification(
+        "Water Reminder", 
+        `Time to drink water! Stay hydrated for optimal health.`, 
+        "water"
+      );
+    }, interval);
+    
+    // Store interval ID to clear it later if needed
+    setReminderIntervalId(id);
+    
+    // Set active reminder
+    setReminderInterval(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    
+    // Show confirmation toast and notification
+    toast({
+      title: "Reminder set",
+      description: `You'll be reminded to drink water every ${hours} hour${hours !== 1 ? 's' : ''}.`
+    });
+    
+    // Add initial notification to confirm reminder is set
+    addNotification(
+      "Water Reminder Set", 
+      `You'll be reminded to drink water every ${hours} hour${hours !== 1 ? 's' : ''}.`, 
+      "water"
+    );
+  };
+
+  // Handle custom reminder time
+  const handleCustomReminder = () => {
+    // Show a custom input or dialog here
+    // For simplicity, let's set a 1.5-hour reminder
+    setWaterReminder(1.5);
+  };
 
   return (
     <DashboardLayout>
@@ -120,26 +173,62 @@ const Water = () => {
             <div className="space-y-4">
               <p className="text-sm text-gray-300">
                 Set reminders to drink water throughout the day.
+                {reminderInterval && (
+                  <span className="block mt-1 text-fitviz-blue">
+                    Current reminder: Every {reminderInterval}
+                  </span>
+                )}
               </p>
               
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" className="bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20">
+                <Button 
+                  variant="outline" 
+                  className={`bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20 ${reminderInterval === '1 hour' ? 'border-fitviz-blue text-fitviz-blue' : ''}`}
+                  onClick={() => setWaterReminder(1)}
+                >
                   Every 1 hour
                 </Button>
-                <Button variant="outline" className="bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20">
+                <Button 
+                  variant="outline" 
+                  className={`bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20 ${reminderInterval === '2 hours' ? 'border-fitviz-blue text-fitviz-blue' : ''}`}
+                  onClick={() => setWaterReminder(2)}
+                >
                   Every 2 hours
                 </Button>
-                <Button variant="outline" className="bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20">
+                <Button 
+                  variant="outline" 
+                  className={`bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20 ${reminderInterval === '3 hours' ? 'border-fitviz-blue text-fitviz-blue' : ''}`}
+                  onClick={() => setWaterReminder(3)}
+                >
                   Every 3 hours
                 </Button>
-                <Button variant="outline" className="bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20">
+                <Button 
+                  variant="outline" 
+                  className={`bg-fitviz-dark-light border-gray-700 hover:bg-fitviz-blue/20 ${reminderInterval === '1.5 hours' ? 'border-fitviz-blue text-fitviz-blue' : ''}`}
+                  onClick={handleCustomReminder}
+                >
                   Custom
                 </Button>
               </div>
               
-              <Button className="w-full bg-fitviz-blue hover:bg-fitviz-blue/80">
-                Set Reminder
-              </Button>
+              {reminderIntervalId !== null && (
+                <Button 
+                  className="w-full bg-fitviz-dark border-gray-700 hover:bg-fitviz-dark/80"
+                  onClick={() => {
+                    if (reminderIntervalId !== null) {
+                      clearInterval(reminderIntervalId);
+                      setReminderIntervalId(null);
+                      setReminderInterval("");
+                      toast({
+                        title: "Reminder canceled",
+                        description: "Water intake reminder has been canceled."
+                      });
+                    }
+                  }}
+                >
+                  Cancel Reminder
+                </Button>
+              )}
             </div>
           </DashboardCard>
         </div>
