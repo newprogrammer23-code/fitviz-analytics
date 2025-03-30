@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Droplet, Plus, BarChart2, Bell } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -175,7 +174,6 @@ const Water = () => {
                 <Progress 
                   value={progressPercentage} 
                   className="h-2.5 bg-gray-700" 
-                  indicatorClassName="bg-gradient-to-r from-fitviz-blue to-fitviz-purple" 
                 />
               </div>
             </div>
@@ -184,7 +182,7 @@ const Water = () => {
               data={chartData} 
               lines={[
                 { dataKey: 'intake', stroke: '#00E5FF', name: 'Daily Intake (L)' },
-                { dataKey: 'target', stroke: '#A459D1', name: 'Target (L)', strokeDasharray: '5 5' }
+                { dataKey: 'target', stroke: '#A459D1', name: 'Target (L)' }
               ]}
               xAxisDataKey="date"
               height={250}

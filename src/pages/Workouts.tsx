@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Dumbbell, Stopwatch, Plus, BarChart2, Target } from "lucide-react";
+import { Dumbbell, Clock, Plus, BarChart2, Target } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import DashboardCard from "@/components/ui/dashboard-card";
 import BarChart from "@/components/charts/BarChart";
@@ -13,13 +12,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// Define muscle groups for selection
 const muscleGroups = [
   "chest", "back", "shoulders", "biceps", "triceps", "forearms", 
   "abs", "legs", "glutes", "calves", "cardiovascular"
 ];
 
-// Sample workout exercises
 const workoutExercises = [
   { name: "Push-ups", muscleGroups: ["chest", "shoulders", "triceps"] },
   { name: "Pull-ups", muscleGroups: ["back", "biceps"] },
@@ -112,7 +109,6 @@ const Workouts = () => {
       description: "Your workout has been recorded successfully."
     });
     
-    // Reset form
     setFormData({
       name: "",
       duration: 30,
@@ -122,11 +118,9 @@ const Workouts = () => {
     setSelectedExercise("");
   };
 
-  // Process workout data for analysis
   const today = new Date().toISOString().split('T')[0];
   const recentWorkouts = workouts.slice(0, 10);
   
-  // Count muscle groups frequency
   const muscleGroupFrequency: Record<string, number> = {};
   workouts.forEach(workout => {
     workout.muscleGroups.forEach(group => {
@@ -134,7 +128,6 @@ const Workouts = () => {
     });
   });
   
-  // Prepare data for the chart
   const muscleGroupData = Object.entries(muscleGroupFrequency)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 7)
@@ -143,7 +136,6 @@ const Workouts = () => {
       count
     }));
 
-  // Identify less worked muscle groups
   const lessWorkedGroups = muscleGroups
     .filter(group => !muscleGroupFrequency[group] || muscleGroupFrequency[group] < 2)
     .slice(0, 3);
@@ -206,7 +198,7 @@ const Workouts = () => {
                     onChange={handleChange}
                     className="bg-fitviz-dark-light border-gray-700"
                   />
-                  <Stopwatch className="ml-2 h-4 w-4 text-gray-400" />
+                  <Clock className="ml-2 h-4 w-4 text-gray-400" />
                 </div>
               </div>
               

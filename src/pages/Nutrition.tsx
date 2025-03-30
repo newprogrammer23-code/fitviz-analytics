@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Utensils, Plus, PieChart, Apple } from "lucide-react";
+import { Utensils, Plus, PieChartIcon, Apple } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import DashboardCard from "@/components/ui/dashboard-card";
 import PieChart from "@/components/charts/PieChart";
@@ -12,7 +11,6 @@ import { useUser } from "@/context/UserContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// Sample food database
 const foodDatabase = [
   { name: "Chicken Breast", calories: 165, carbs: 0, protein: 31, fat: 3.6 },
   { name: "Brown Rice", calories: 216, carbs: 45, protein: 5, fat: 1.8 },
@@ -39,22 +37,19 @@ const Nutrition = () => {
   });
   const [selectedFood, setSelectedFood] = useState("");
 
-  // Filter today's meals
   const today = new Date().toISOString().split('T')[0];
   const todayMeals = meals.filter(meal => meal.date === today);
   
-  // Calculate macros for today
   const totalCalories = todayMeals.reduce((acc, meal) => acc + meal.calories, 0);
   const totalCarbs = todayMeals.reduce((acc, meal) => acc + meal.carbs, 0);
   const totalProtein = todayMeals.reduce((acc, meal) => acc + meal.protein, 0);
   const totalFat = todayMeals.reduce((acc, meal) => acc + meal.fat, 0);
   
-  // Calculate recommended daily values based on profile
   const weight = Number(profile.weight);
   const recommendedCalories = profile.gender === 'male' ? 2500 : 2000;
-  const recommendedProtein = weight * 1.6; // 1.6g per kg of bodyweight
-  const recommendedFat = (recommendedCalories * 0.25) / 9; // 25% of calories from fat
-  const recommendedCarbs = (recommendedCalories * 0.5) / 4; // 50% of calories from carbs
+  const recommendedProtein = weight * 1.6;
+  const recommendedFat = (recommendedCalories * 0.25) / 9;
+  const recommendedCarbs = (recommendedCalories * 0.5) / 4;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -102,7 +97,6 @@ const Nutrition = () => {
       description: "Your meal has been recorded successfully."
     });
     
-    // Reset form
     setFormData({
       name: "",
       calories: 0,
@@ -114,7 +108,6 @@ const Nutrition = () => {
     setSelectedFood("");
   };
 
-  // Prepare data for pie chart
   const macroData = [
     { name: 'Carbs', value: totalCarbs, color: '#00E5FF' },
     { name: 'Protein', value: totalProtein, color: '#A459D1' },
@@ -245,7 +238,7 @@ const Nutrition = () => {
         <div className="lg:col-span-2">
           <DashboardCard 
             title="Nutrition Overview" 
-            icon={<PieChart className="text-fitviz-pink" />}
+            icon={<PieChartIcon className="text-fitviz-pink" />}
             glowEffect="pink"
           >
             <div className="grid grid-cols-4 gap-2 mb-6">
@@ -275,9 +268,8 @@ const Nutrition = () => {
               <div className="w-full md:w-1/2 h-64">
                 <PieChart 
                   data={macroData}
-                  dataKey="value"
-                  nameKey="name"
                   height={250}
+                  showLegend={true}
                 />
               </div>
               
