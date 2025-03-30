@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import DashboardCard from "@/components/ui/dashboard-card";
 import LineChart from "@/components/charts/LineChart";
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { useUser } from "@/context/UserContext";
+import { useToast } from "@/components/ui/use-toast";
 
 // Mock weight data for the chart
 const weightData = [
@@ -28,12 +30,24 @@ const weightData = [
 ];
 
 const Profile = () => {
+  const { profile, updateProfile } = useUser();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
-    gender: "male",
-    age: "30",
-    height: "178",
-    weight: "73.2",
+    gender: profile.gender,
+    age: profile.age,
+    height: profile.height,
+    weight: profile.weight,
   });
+
+  // Update form data when profile changes
+  useEffect(() => {
+    setFormData({
+      gender: profile.gender,
+      age: profile.age,
+      height: profile.height,
+      weight: profile.weight,
+    });
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,12 +60,16 @@ const Profile = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Save profile data
+    updateProfile(formData);
+    toast({
+      title: "Profile updated",
+      description: "Your profile data has been saved successfully.",
+    });
   };
 
-  // Calculate BMI
-  const heightInMeters = Number(formData.height) / 100;
-  const weightInKg = Number(formData.weight);
+  // Calculate BMI based on current profile data
+  const heightInMeters = Number(profile.height) / 100;
+  const weightInKg = Number(profile.weight);
   const bmi = weightInKg / (heightInMeters * heightInMeters);
   
   // Determine BMI category
